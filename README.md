@@ -94,3 +94,11 @@ sequenceDiagram
    ```bash
    python main.py "Fetch and summarize the active issues for repo github_username/repository_name"
    ```
+
+### For example queries , look into terminal_exeecution_logs.md
+
+### 📧 For any queries, contact me at [anughnakandimalla11@gmail.com](anughnakandimalla11@gmail.com).
+
+## 👩‍💻Author
+
+Anughna
