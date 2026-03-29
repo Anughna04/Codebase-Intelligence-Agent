@@ -15,24 +15,28 @@ graph TD
     classDef sys fill:#1c2d3d,stroke:#000,stroke-width:2px,color:#fff;
 
     Start((Query)) --> Planner[Planner Agent<br/>Determines Context Scope]:::llm
-    
-    subgraph Context Ingestion [Dynamic Context Generation]
-        Planner -- Local AST Search --> RAG[Retriever Agent<br/>Vectorize & Search]:::llm
-        Planner -- Remote Integration --> MCP[MCP Tool Agent<br/>GitHub API]:::llm
-        Planner -- Deep Analysis --> Both{Both Contexts}
-        
-        RAG -.-> |Tree-sitter Chunking -> FAISS| DB[(Local FAISS DB)]:::sys
-        MCP -.-> |MCP STDIO Call| GH[GitHub Endpoints]:::tool
+
+    subgraph ContextIngestion["Dynamic Context Generation"]
+        Planner --> RAG[Retriever Agent<br/>Vectorize & Search]:::llm
+        Planner --> MCP[MCP Tool Agent<br/>GitHub API]:::llm
+        Planner --> Both{Hybrid Context}:::llm
+
+        RAG -.-> DB[(Local FAISS DB)]:::sys
+        MCP -.-> GH[GitHub Endpoints]:::tool
     end
 
-    Context Ingestion --> Analyzer[Analyzer Agent<br/>Maps Logic]:::llm
-    
-    subgraph Analysis Phase
+    RAG --> Analyzer[Analyzer Agent<br/>Maps Logic]:::llm
+    MCP --> Analyzer
+    Both --> Analyzer
+
+    subgraph AnalysisPhase["Analysis Phase"]
         Analyzer --> Debugger[Debugger Agent<br/>Finds Logic Flaws]:::llm
         Analyzer --> Architect[Architecture Agent<br/>System Design Checks]:::llm
     end
 
-    Analysis Phase --> Synthesizer[Synthesizer Agent<br/>Generates Markdown Report]:::llm
+    Debugger --> Synthesizer[Synthesizer Agent<br/>Generates Markdown Report]:::llm
+    Architect --> Synthesizer
+
     Synthesizer --> Finish(((Final Report)))
 ```
 
