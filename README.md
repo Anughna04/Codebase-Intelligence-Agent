@@ -45,7 +45,21 @@ graph TD
 Instead of blindly feeding massive text files to an LLM, the local codebase is structurally decomposed using `tree-sitter`. The diagram below illustrates how code is processed before and after prompting.
 
 ```mermaid
-sequenceDiagram participant User participant System as Main Runtime participant AST as Tree-Sitter Parser participant DB as FAISS Vector Store participant Agent as LangGraph Nodes User->>System: "Explain how vector searches work here" System->>AST: Traverse Repository (.py files) AST-->>System: Extracts Classes & Functions exactly System->>DB: Embed (Gemini models/gemini-embedding-001) DB-->>System: Semantic Top-K Context Match System->>Agent: Construct Chat History + Context Agent-->>System: Execute Review Nodes (Analyzer -> Debugger) System-->>User: Markdown Output Rendered
+sequenceDiagram
+    participant User
+    participant System as Main Runtime
+    participant AST as Tree-Sitter Parser
+    participant DB as FAISS Vector Store
+    participant Agent as LangGraph Nodes
+
+    User->>System: "Explain how vector searches work here"
+    System->>AST: Traverse Repository (.py files)
+    AST-->>System: Extracts Classes & Functions exactly
+    System->>DB: Embed (Gemini models/gemini-embedding-001)
+    DB-->>System: Semantic Top-K Context Match
+    System->>Agent: Construct Chat History + Context
+    Agent-->>System: Execute Review Nodes (Analyzer -> Debugger)
+    System-->>User: Markdown Output Rendered
 ```
 
 ---
