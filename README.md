@@ -45,21 +45,63 @@ graph TD
 Instead of blindly feeding massive text files to an LLM, the local codebase is structurally decomposed using `tree-sitter`. The diagram below illustrates how code is processed before and after prompting.
 
 ```mermaid
-sequenceDiagram
-    participant User
-    participant System as Main Runtime
-    participant AST as Tree-Sitter Parser
-    participant DB as FAISS Vector Store
-    participant Agent as LangGraph Nodes
+graph TD
+    %% ====== STYLES ======
+    classDef llm fill:#4a154b,stroke:#000,stroke-width:2px,color:#fff;
+    classDef tool fill:#0052cc,stroke:#000,stroke-width:2px,color:#fff;
+    classDef sys fill:#1c2d3d,stroke:#000,stroke-width:2px,color:#fff;
 
-    User->>System: "Explain how vector searches work here"
-    System->>AST: Traverse Repository (.py files)
-    AST-->>System: Extracts Classes & Functions exactly
-    System->>DB: Embed (Gemini models/gemini-embedding-001)
-    DB-->>System: Semantic Top-K Context Match
-    System->>Agent: Construct Chat History + Context
-    Agent-->>System: Execute Review Nodes (Analyzer -> Debugger)
-    System-->>User: Markdown Output Rendered
+    %% ====== ENTRY ======
+    Start((Scenario Input)) --> Init[Initialize State<br/>scenario_X]:::sys
+    Init --> Loader[Scenario Loader<br/>Load Data Files]:::sys
+
+    %% ====== ORCHESTRATION ======
+    Loader --> Orchestrator[LangGraph Orchestrator<br/>Controls Agent Flow]:::llm
+
+    %% ====== AGENT PIPELINE ======
+    subgraph AgentPipeline["Autonomous War Room Agents"]
+        direction LR
+        DA[Data Analyst]:::llm --> PM[Product Manager]:::llm
+        PM --> MKT[Marketing Strategist]:::llm
+        MKT --> SRE[SRE / Infra Agent]:::llm
+        SRE --> CS[Customer Support Agent]:::llm
+        CS --> RISK[Risk Critic]:::llm
+    end
+
+    Orchestrator --> DA
+    RISK --> Orchestrator
+
+    %% ====== EXECUTION ENGINE ======
+    subgraph ExecutionEngine["Agent Execution Engine (Reusable Logic)"]
+        direction TB
+        Tools[Load Tools / External Data]:::tool
+        Prompt[Structured Prompt Builder]:::sys
+        LLM((LLaMA 3.2 via Ollama)):::llm
+        Parser[Strict JSON Parser<br/>Validation Layer]:::sys
+
+        Tools --> Prompt
+        Prompt --> LLM
+        LLM --> Parser
+    end
+
+    %% Each agent uses execution engine
+    DA -.-> Tools
+    PM -.-> Tools
+    MKT -.-> Tools
+    SRE -.-> Tools
+    CS -.-> Tools
+    RISK -.-> Tools
+
+    %% ====== DECISION ======
+    Orchestrator --> Decision{Final Decision}:::llm
+    Decision -->|PROCEED| Proceed[Launch Approved]:::sys
+    Decision -->|PAUSE| Pause[Hold Execution]:::sys
+    Decision -->|ROLLBACK| Rollback[Abort & Log Issues]:::sys
+
+    %% ====== OUTPUT ======
+    Proceed --> Output[(Logs + Console Output)]:::sys
+    Pause --> Output
+    Rollback --> Output
 ```
 
 ---
